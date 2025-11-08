@@ -23,10 +23,12 @@ import StudyTimer from './components/StudyTimer';
 import ToastProvider from './components/ToastProvider';
 import type { Subject, ViewMode, ImportResult } from './types';
 import { DUMMY_SUBJECTS, VIETNAM_GRADE_8_SUBJECTS } from './constants';
+// DUMMY_SUBJECTS chỉ dùng để restore khi cần, không dùng làm default
 import { FloatingActionButton } from './components/icons';
 
 const App: React.FC = () => {
-  const { subjects, addSubject, updateSubject, deleteSubject, setSubjects, syncAllSubjects } = useTimetable(DUMMY_SUBJECTS);
+  // Database mặc định là trống, không có dữ liệu mẫu
+  const { subjects, addSubject, updateSubject, deleteSubject, setSubjects, syncAllSubjects } = useTimetable([]);
   const { language, updateSettings } = useContext(SettingsContext);
   const toast = useToast();
 

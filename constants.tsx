@@ -102,6 +102,13 @@ export const TRANSLATIONS = {
     classReminder: "Class Reminder",
     homeworkDue: "Homework Due Soon",
     dailySummary: "Daily Summary",
+    clearAllData: "Clear All Data",
+    clearAllDataConfirm: "Are you sure you want to delete all data? This action cannot be undone.",
+    clearAllDataSuccess: "All data has been cleared successfully.",
+    clearAllDataWarning: "This will delete all subjects, homework, and settings. Are you sure?",
+    restoreSampleData: "Restore Sample Data",
+    restoreSampleDataConfirm: "Do you want to restore sample data after clearing?",
+    restoreSampleDataSuccess: "Sample data restored successfully.",
   },
   vi: {
     today: "Hôm nay",
@@ -196,6 +203,13 @@ export const TRANSLATIONS = {
     classReminder: "Nhắc tiết học",
     homeworkDue: "Bài tập sắp hết hạn",
     dailySummary: "Tóm tắt hàng ngày",
+    clearAllData: "Xóa tất cả dữ liệu",
+    clearAllDataConfirm: "Bạn có chắc chắn muốn xóa tất cả dữ liệu? Hành động này không thể hoàn tác.",
+    clearAllDataSuccess: "Đã xóa tất cả dữ liệu thành công.",
+    clearAllDataWarning: "Điều này sẽ xóa tất cả môn học, bài tập và cài đặt. Bạn có chắc chắn?",
+    restoreSampleData: "Khôi phục dữ liệu mẫu",
+    restoreSampleDataConfirm: "Bạn có muốn khôi phục dữ liệu mẫu sau khi xóa?",
+    restoreSampleDataSuccess: "Đã khôi phục dữ liệu mẫu thành công.",
   },
 };
 

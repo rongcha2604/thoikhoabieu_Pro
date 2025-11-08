@@ -1,21 +1,94 @@
-import React, { useContext } from 'react';
-import { motion } from 'framer-motion';
+import React, { useContext, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { SettingsContext } from '../context/SettingsContext';
-import { TRANSLATIONS } from '../constants';
+import { TRANSLATIONS, CLASS_PERIODS } from '../constants';
 import { CloseIcon, LightModeIcon, DarkModeIcon } from './icons';
+import { deleteDB } from 'idb';
+import { Capacitor } from '@capacitor/core';
 
 interface SettingsModalProps {
   onClose: () => void;
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
-  const { settings, setTheme, setLanguage, updateClassPeriods, language, timetableTitle, updateTimetableTitle } = useContext(SettingsContext);
+  const { settings, setTheme, setLanguage, updateClassPeriods, language, timetableTitle, updateTimetableTitle, updateSettings } = useContext(SettingsContext);
   const t = TRANSLATIONS[language];
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const handleTimeChange = (session: 'morning' | 'afternoon', index: number, field: 'startTime' | 'endTime', value: string) => {
     const newPeriods = JSON.parse(JSON.stringify(settings.classPeriods)); // Deep copy
     newPeriods[session][index][field] = value;
     updateClassPeriods(newPeriods);
+  };
+
+  const clearAllData = async () => {
+    try {
+      // 1. Xóa localStorage
+      localStorage.removeItem('timetable_subjects');
+      localStorage.removeItem('timetable_settings');
+      
+      // 2. Xóa IndexedDB (homework database)
+      try {
+        // Xóa database trực tiếp
+        await deleteDB('timetable-homework');
+        console.log('✅ IndexedDB deleted successfully');
+      } catch (error) {
+        console.error('Failed to delete IndexedDB:', error);
+        // Thử xóa lại sau khi đợi một chút (có thể có connection đang mở)
+        try {
+          await new Promise(resolve => setTimeout(resolve, 200));
+          await deleteDB('timetable-homework');
+          console.log('✅ IndexedDB deleted successfully (retry)');
+        } catch (retryError) {
+          console.error('Failed to delete IndexedDB after retry:', retryError);
+          // Vẫn tiếp tục dù có lỗi
+        }
+      }
+      
+      // 3. Xóa widget storage (Android)
+      if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+        try {
+          const { registerPlugin } = await import('@capacitor/core');
+          const TimetableStorage = registerPlugin<any>('TimetableStorage');
+          await TimetableStorage.saveSubjects({ subjects: [] });
+          console.log('✅ Widget storage cleared');
+        } catch (error) {
+          console.error('Failed to clear widget storage:', error);
+          // Vẫn tiếp tục dù có lỗi
+        }
+      }
+      
+      // 4. Reset settings về mặc định
+      const defaultSettings = {
+        theme: 'light' as const,
+        language: 'vi' as const,
+        notifications: true,
+        classPeriods: CLASS_PERIODS,
+        timetableTitle: TRANSLATIONS.vi.timetable,
+      };
+      updateSettings(defaultSettings);
+      
+      // 5. Reload page để reset toàn bộ state
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+    } catch (error) {
+      console.error('Failed to clear all data:', error);
+      alert((language === 'vi' ? 'Có lỗi xảy ra: ' : 'Error: ') + (error instanceof Error ? error.message : String(error)));
+    }
+  };
+
+  const handleClearAllData = () => {
+    setShowConfirmDialog(true);
+  };
+
+  const confirmClearAllData = () => {
+    setShowConfirmDialog(false);
+    clearAllData();
+  };
+
+  const cancelClearAllData = () => {
+    setShowConfirmDialog(false);
   };
 
   return (
@@ -124,8 +197,67 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
               </div>
             </div>
           </div>
+
+          {/* Clear All Data */}
+          <div className="border-t border-border-light dark:border-border-dark pt-6">
+            <label className="block text-lg font-semibold mb-2 text-red-600 dark:text-red-400">
+              {t.clearAllData}
+            </label>
+            <p className="text-sm text-text-muted-light dark:text-text-muted-dark mb-4">
+              {t.clearAllDataWarning}
+            </p>
+            <button
+              onClick={handleClearAllData}
+              className="w-full px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors"
+            >
+              {t.clearAllData}
+            </button>
+          </div>
         </div>
       </motion.div>
+
+      {/* Confirmation Dialog - Xác nhận xóa */}
+      <AnimatePresence>
+        {showConfirmDialog && (
+          <motion.div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={cancelClearAllData}
+          >
+            <motion.div
+              className="bg-card-light dark:bg-card-dark rounded-2xl shadow-xl w-full max-w-md p-6"
+              onClick={(e) => e.stopPropagation()}
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+            >
+              <h3 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400">
+                {t.clearAllData}
+              </h3>
+              <p className="text-text-muted-light dark:text-text-muted-dark mb-6">
+                {t.clearAllDataConfirm}
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={cancelClearAllData}
+                  className="flex-1 px-4 py-2 bg-background-light dark:bg-slate-600 rounded-lg font-semibold transition-colors"
+                >
+                  {t.close}
+                </button>
+                <button
+                  onClick={confirmClearAllData}
+                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors"
+                >
+                  {t.delete}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </motion.div>
   );
 };
