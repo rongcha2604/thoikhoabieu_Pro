@@ -18,10 +18,11 @@ Error: Command "npm run build" exited with 1
 ## ✅ Giải Pháp Đã Áp Dụng
 
 ### 1. **Tạo `vercel.json`**
-- Cấu hình Node.js version: `20.x` (thay vì 22.x)
-- Cấu hình install command: `npm ci --legacy-peer-deps`
-- Cấu hình build command: `npm ci && npm run build`
+- Cấu hình install command: `npm install --legacy-peer-deps`
+- Cấu hình build command: `npm run build`
 - Cấu hình output directory: `dist`
+- ⚠️ **Lưu ý:** KHÔNG dùng `nodeVersion` trong vercel.json (không hợp lệ)
+- ✅ Vercel sẽ tự detect Node version từ `.nvmrc` hoặc `package.json` engines
 
 ### 2. **Cập Nhật `package.json`**
 - Thêm `engines` để chỉ định Node version: `>=18.0.0 <=20.x`
@@ -69,13 +70,13 @@ git push
 ```json
 {
   "version": 2,
-  "buildCommand": "npm ci && npm run build",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "installCommand": "npm ci --legacy-peer-deps",
-  "framework": "vite",
-  "nodeVersion": "20.x"
+  "installCommand": "npm install --legacy-peer-deps",
+  "framework": "vite"
 }
 ```
+⚠️ **Lưu ý:** KHÔNG dùng `nodeVersion` trong vercel.json (sẽ báo lỗi "Invalid request")
 
 ### **2. Kiểm tra `package.json`:**
 ```json
