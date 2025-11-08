@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#FFFFFF">
+
+    <!-- Simple test widget - No custom drawables -->
+    <TextView
+        android:id="@+id/widget_test_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="TEST WIDGET - Nếu thấy text này = Widget hoạt động!"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#FF0000"
+        android:gravity="center"
+        android:padding="20dp"
+        android:background="#FFEB3B" />
+
+</LinearLayout>
+
